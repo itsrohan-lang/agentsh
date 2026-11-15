@@ -38,7 +38,7 @@ done
 
 # 2. Check npm global package removal
 if command -v npm >/dev/null 2>&1; then
-    for pkg in "agentsh" "stuntdouble-sandbox-cli"; do
+    for pkg in "agentsh-cli" "@rohan463/agentsh" "agentsh" "stuntdouble-sandbox-cli"; do
         if npm list -g "$pkg" >/dev/null 2>&1; then
             echo ">> Uninstalling global npm package ($pkg)..."
             npm uninstall -g "$pkg" || true

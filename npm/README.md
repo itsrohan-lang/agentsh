@@ -5,7 +5,9 @@ A restricted container shell & instant rollback environment for autonomous AI co
 ## Installation
 
 ```bash
-npm install -g agentsh
+npm install -g agentsh-cli
+# or
+npm install -g @rohan463/agentsh
 ```
 
 The package automatically downloads the appropriate native binary for your platform (Linux, macOS, Windows) during installation, with cryptographic SHA-256 checksum verification.
