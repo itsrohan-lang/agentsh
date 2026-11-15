@@ -1,6 +1,6 @@
 {
   "name": "agentsh-cli",
-  "version": "3.6.0",
+  "version": "3.7.0",
   "description": "A restricted container shell & instant rollback sandbox for AI coding agents",
   "main": "bin/agentsh.js",
   "bin": {
