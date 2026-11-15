@@ -1,7 +1,7 @@
 {
-  "name": "stuntdouble-sandbox-cli",
+  "name": "agentsh",
   "version": "3.6.0",
-  "description": "Secure AI Agent Sandbox with Docker & eBPF interceptors",
+  "description": "A restricted container shell & instant rollback sandbox for AI coding agents",
   "main": "bin/stuntdouble.js",
   "bin": {
     "agentsh": "bin/stuntdouble.js",

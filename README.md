@@ -3,7 +3,7 @@
   <h1>🛡️ agentsh</h1>
   <p><b>A restricted container shell & instant rollback environment for autonomous AI coding agents</b></p>
 
-  [![NPM Version](https://img.shields.io/npm/v/stuntdouble-sandbox-cli?color=00f0ff&style=for-the-badge)](https://www.npmjs.com/package/stuntdouble-sandbox-cli)
+  [![NPM Version](https://img.shields.io/npm/v/agentsh?color=00f0ff&style=for-the-badge)](https://www.npmjs.com/package/agentsh)
   [![License](https://img.shields.io/badge/License-MIT-8a2be2.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 </div>
 
@@ -52,7 +52,7 @@ Installs `agentsh` with aliases `ash`, `sd`, and `stuntdouble` to `/usr/local/bi
 Alternatively, install via npm:
 
 ```bash
-npm install -g stuntdouble-sandbox-cli
+npm install -g agentsh
 ```
 
 ### Uninstallation

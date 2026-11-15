@@ -1,39 +1,45 @@
-# stuntdouble-sandbox-cli
+# agentsh
 
-Secure AI Agent Sandbox with Docker isolation and git-based rollback.
+A restricted container shell & instant rollback environment for autonomous AI coding agents.
 
 ## Installation
 
 ```bash
-npm install -g stuntdouble-sandbox-cli
+npm install -g agentsh
 ```
 
-The package automatically downloads the appropriate native binary for your platform (Linux, macOS, Windows) during installation.
+The package automatically downloads the appropriate native binary for your platform (Linux, macOS, Windows) during installation, with cryptographic SHA-256 checksum verification.
 
 ## Usage
 
-After installation, the `sd` and `stuntdouble` commands are available:
+After installation, the `agentsh`, `ash`, `sd`, and `stuntdouble` commands are available:
 
 ```bash
 # Run an agent in a sandboxed container
-sd run <agent-name>
+agentsh run claude --allow-unenforced-network
+# or with short alias:
+ash run claude --allow-unenforced-network
 
-# Create a workspace checkpoint
-sd checkpoint save <name>
+# Roll back agent workspace modifications
+agentsh rewind
 
-# Restore a checkpoint
-sd checkpoint restore <name>
+# Create and manage workspace checkpoints
+agentsh checkpoint save my-checkpoint
+agentsh checkpoint list
+agentsh checkpoint restore my-checkpoint
 
 # Show help
-sd --help
+agentsh --help
 ```
 
 ## What it does
 
-StuntDouble runs autonomous coding agents inside a restricted Docker container with:
-- Dropped capabilities and resource limits
-- Scoped workspace mount
-- Git-based snapshot rollback
+`agentsh` runs autonomous coding agents inside a restricted Docker container with:
+- Dropped Linux capabilities (`--cap-drop=ALL`)
+- CPU & memory resource limits
+- Scoped working directory mount (`/workspace`)
+- Zero-copy Git-based snapshot rollback (`agentsh rewind`)
+- Zero-trust host egress proxy substituting dummy API keys
 
 **Network egress filtering is NOT implemented.** Sandboxed agents can still reach the network. See [ENFORCEMENT.md](https://github.com/itsrohan-lang/agentsh/blob/main/docs/ENFORCEMENT.md) for what is and is not enforced.
 

@@ -22,7 +22,7 @@ export default function Home() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#8a2be2]">Without the Fear.</span>
           </h1>
           <p className="text-xl text-zinc-400 max-w-2xl mt-2 leading-relaxed font-light">
-            StuntDouble is the ultimate Zero-Trust Isolation Engine. We wrap autonomous coding agents like Claude Code and Copilot in restricted containers with dropped capabilities, resource limits, zero-copy rewinds, and native macOS &amp; Windows kernel interceptors.
+            agentsh is a restricted container shell &amp; instant rollback sandbox for autonomous AI coding agents. Run Claude Code, Cursor, and aider safely with dropped capabilities, cgroup resource limits, and zero-trust API credential substitution.
           </p>
           
           <div className="flex gap-4 mt-4">
@@ -51,12 +51,12 @@ export default function Home() {
         <section className="w-full mt-32 max-w-4xl flex flex-col gap-8">
           <div className="text-center mb-8">
             <h2 className="text-4xl font-bold text-white mb-4">CLI Reference Manual</h2>
-            <p className="text-zinc-400 text-lg">Master the StuntDouble ecosystem with our zero-trust orchestration commands.</p>
+            <p className="text-zinc-400 text-lg">Master the agentsh toolkit with zero-trust container commands.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-[#111116] border border-zinc-800 p-8 rounded-3xl hover:border-[#00f0ff] transition-colors group">
-              <h3 className="text-2xl font-bold text-white mb-2 font-mono group-hover:text-[#00f0ff] transition-colors">sd run &lt;agent&gt;</h3>
+              <h3 className="text-2xl font-bold text-white mb-2 font-mono group-hover:text-[#00f0ff] transition-colors">agentsh run &lt;agent&gt;</h3>
               <p className="text-zinc-400 leading-relaxed mb-4">Spawns an agent inside a capability-dropped container with scoped workspace mounts.</p>
               <ul className="text-sm text-zinc-500 space-y-2 font-mono">
                 <li>--allow-unenforced-network : Acknowledge egress state</li>
@@ -65,17 +65,17 @@ export default function Home() {
             </div>
 
             <div className="bg-[#111116] border border-zinc-800 p-8 rounded-3xl hover:border-[#8a2be2] transition-colors group">
-              <h3 className="text-2xl font-bold text-white mb-2 font-mono group-hover:text-[#8a2be2] transition-colors">sd rewind</h3>
+              <h3 className="text-2xl font-bold text-white mb-2 font-mono group-hover:text-[#8a2be2] transition-colors">agentsh rewind</h3>
               <p className="text-zinc-400 leading-relaxed mb-4">Restores tracked workspace files to the pre-run snapshot using zero-copy git plumbing and removes untracked agent artifacts.</p>
             </div>
 
             <div className="bg-[#111116] border border-zinc-800 p-8 rounded-3xl hover:border-[#00f0ff] transition-colors group">
-              <h3 className="text-2xl font-bold text-white mb-2 font-mono group-hover:text-[#00f0ff] transition-colors">sd swarm &lt;agents...&gt;</h3>
+              <h3 className="text-2xl font-bold text-white mb-2 font-mono group-hover:text-[#00f0ff] transition-colors">agentsh swarm &lt;agents...&gt;</h3>
               <p className="text-zinc-400 leading-relaxed mb-4">Orchestrates multiple AI agents inside an isolated Docker bridge network (StuntNet) with synthetic internal service communication.</p>
             </div>
 
             <div className="bg-[#111116] border border-zinc-800 p-8 rounded-3xl hover:border-[#8a2be2] transition-colors group">
-              <h3 className="text-2xl font-bold text-white mb-2 font-mono group-hover:text-[#8a2be2] transition-colors">sd record &lt;command&gt;</h3>
+              <h3 className="text-2xl font-bold text-white mb-2 font-mono group-hover:text-[#8a2be2] transition-colors">agentsh record &lt;command&gt;</h3>
               <p className="text-zinc-400 leading-relaxed mb-4">Runs target commands under a Keploy sidecar to capture outbound database and API traffic into replayable mock definitions.</p>
             </div>
           </div>
@@ -83,8 +83,8 @@ export default function Home() {
       </main>
       
       <footer className="border-t border-zinc-800 w-full py-12 flex flex-col items-center justify-center text-zinc-500 text-sm z-10 bg-[#05050a] mt-auto">
-        <div className="text-lg font-black text-white mb-2">Stunt<span className="text-[#00f0ff]">Double</span></div>
-        <p>Built for the AI Agent Era. © 2026</p>
+        <div className="text-lg font-black text-white mb-2">agent<span className="text-[#00f0ff]">sh</span></div>
+        <p>A restricted container shell for AI coding agents. © 2026</p>
       </footer>
     </div>
   );

@@ -46,8 +46,8 @@ export default function Dashboard() {
       {/* Navbar */}
       <nav className="w-full flex justify-between items-center py-6 px-8 border-b border-zinc-800/50 bg-[#0d0d12]">
         <div className="flex items-center gap-4">
-          <Image src="/logo.jpg" width={32} height={32} alt="StuntDouble Logo" className="w-8 h-8 rounded-md" priority />
-          <div className="text-2xl font-black tracking-tighter text-white">Stunt<span className="text-[#00f0ff]">Double</span></div>
+          <Image src="/logo.png" width={32} height={32} alt="agentsh Logo" className="w-8 h-8 rounded-md" priority />
+          <div className="text-2xl font-black tracking-tighter text-white">agent<span className="text-[#00f0ff]">sh</span></div>
           <div className="ml-4 px-3 py-1 rounded-full bg-zinc-800/50 border border-zinc-700 text-xs font-semibold text-zinc-400">
             Control Plane
           </div>
@@ -77,7 +77,7 @@ export default function Dashboard() {
         <div className="w-full mb-12 flex justify-between items-end">
           <div>
             <h1 className="text-4xl font-black text-white mb-2 tracking-tight">Mission Control</h1>
-            <p className="text-zinc-400">Run telemetry reported by the local StuntDouble CLI.</p>
+            <p className="text-zinc-400">Run telemetry reported by the local agentsh CLI.</p>
           </div>
           <button 
             onClick={() => setIsPolling(!isPolling)}

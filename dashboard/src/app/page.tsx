@@ -128,8 +128,8 @@ export default function Dashboard() {
 
       <nav className="relative z-10 border-b border-zinc-800/50 bg-[#0a0a0f]/80 backdrop-blur-xl px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Image src="/logo.png" width={40} height={40} className="w-10 h-10 rounded-lg shadow-[0_0_15px_rgba(138,43,226,0.5)]" alt="StuntDouble Logo" priority />
-          <span className="text-xl font-black text-white tracking-tight">StuntDouble <span className="text-zinc-500 font-medium">Control Plane</span></span>
+          <Image src="/logo.png" width={40} height={40} className="w-10 h-10 rounded-lg shadow-[0_0_15px_rgba(138,43,226,0.5)]" alt="agentsh Logo" priority />
+          <span className="text-xl font-black text-white tracking-tight">agentsh <span className="text-zinc-500 font-medium">Control Plane</span></span>
         </div>
         <div className="flex items-center gap-6 text-sm font-medium">
           <button onClick={() => setActiveTab('overview')} className={activeTab === 'overview' ? "text-white" : "text-zinc-500 hover:text-zinc-300 transition"}>Overview</button>
@@ -167,7 +167,7 @@ export default function Dashboard() {
           <>
             <header className="mb-10">
               <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">Security Posture</h1>
-              <p className="text-zinc-400 text-lg">Telemetry reported by StuntDouble CLI instances.</p>
+              <p className="text-zinc-400 text-lg">Telemetry reported by agentsh CLI instances.</p>
             </header>
 
             {/* KPIs — every value is read from the control plane, or shown as "—". */}

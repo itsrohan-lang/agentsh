@@ -29,7 +29,7 @@ This builds an isolated Alpine Linux Docker container with Go and Git, executes 
 - **`dashboard/`**: Next.js 16 SOC mission control dashboard.
 - **`docs/`**: Documentation and architectural specifications.
 - **`experimental/`**: Archived prototypes (Firecracker microVM launcher, macOS ESF driver, Windows WFP driver, stuntbot). Kept for reference.
-- **`npm/`**: Node.js wrapper package (`stuntdouble-sandbox-cli`) with SHA-256 verified binary downloader.
+- **`npm/`**: Node.js wrapper package (`agentsh`) with SHA-256 verified binary downloader.
 
 ## Key Security Realities & Enforcement
 1. **Container Isolation is Enforced:** Accidental damage, memory exhaustion, or runaway loops inside `/workspace` are contained and reversible with `agentsh rewind`.

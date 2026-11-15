@@ -24,13 +24,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install StuntDouble
-        run: npm install -g stuntdouble-sandbox-cli
+      - name: Install agentsh
+        run: npm install -g agentsh
 
       # Network egress filtering is not implemented, so the sandbox provides
       # container isolation only. --allow-unenforced-network acknowledges that.
       - name: Run agent in sandbox
-        run: sd run sh --allow-unenforced-network -c "echo audited"
+        run: agentsh run sh --allow-unenforced-network -c "echo audited"
 `
 
 var ciCmd = &cobra.Command{

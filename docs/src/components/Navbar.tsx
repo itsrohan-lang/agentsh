@@ -6,9 +6,9 @@ export default function Navbar() {
     <nav className="w-full max-w-6xl flex justify-between items-center py-6 px-8 z-20 border-b border-zinc-800/50 backdrop-blur-md sticky top-0 bg-[#05050a]/80 mx-auto">
       <Link href="/">
         <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition">
-          <Image src="/logo.png" width={32} height={32} alt="StuntDouble Logo" className="w-8 h-8 rounded-md" priority />
+          <Image src="/logo.png" width={32} height={32} alt="agentsh Logo" className="w-8 h-8 rounded-md" priority />
           <div className="text-2xl font-black tracking-tighter text-white">
-            Stunt<span className="text-[#00f0ff]">Double</span>
+            agent<span className="text-[#00f0ff]">sh</span>
           </div>
         </div>
       </Link>

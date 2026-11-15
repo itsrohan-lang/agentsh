@@ -38,10 +38,12 @@ done
 
 # 2. Check npm global package removal
 if command -v npm >/dev/null 2>&1; then
-    if npm list -g stuntdouble-sandbox-cli >/dev/null 2>&1; then
-        echo ">> Uninstalling global npm package (stuntdouble-sandbox-cli)..."
-        npm uninstall -g stuntdouble-sandbox-cli || true
-    fi
+    for pkg in "agentsh" "stuntdouble-sandbox-cli"; do
+        if npm list -g "$pkg" >/dev/null 2>&1; then
+            echo ">> Uninstalling global npm package ($pkg)..."
+            npm uninstall -g "$pkg" || true
+        fi
+    done
 fi
 
 # 3. Purge workspace files if requested

@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Initiating StuntDouble Marketplace Release..."
+echo "🚀 Initiating agentsh Marketplace Release..."
 
 # 1. Publish NPM Wrapper
-echo ">> Publishing stuntdouble-sandbox-cli to NPM registry..."
+echo ">> Publishing agentsh to NPM registry..."
 cd npm
 npm publish --access public
 cd ..
