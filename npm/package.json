@@ -2,17 +2,18 @@
   "name": "agentsh",
   "version": "3.6.0",
   "description": "A restricted container shell & instant rollback sandbox for AI coding agents",
-  "main": "bin/stuntdouble.js",
+  "main": "bin/agentsh.js",
   "bin": {
-    "agentsh": "bin/stuntdouble.js",
-    "ash": "bin/stuntdouble.js",
-    "sd": "bin/stuntdouble.js",
+    "agentsh": "bin/agentsh.js",
+    "ash": "bin/agentsh.js",
+    "sd": "bin/agentsh.js",
     "stuntdouble": "bin/stuntdouble.js"
   },
   "scripts": {
     "postinstall": "node scripts/postinstall.js"
   },
   "files": [
+    "bin/agentsh.js",
     "bin/stuntdouble.js",
     "scripts/postinstall.js",
     "scripts/download.js",
@@ -34,7 +35,9 @@
     "sandbox",
     "docker",
     "ebpf",
-    "security"
+    "security",
+    "agentsh",
+    "containment"
   ],
   "author": "Rohan",
   "license": "MIT"

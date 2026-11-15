@@ -16,7 +16,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const token = process.env.NEXT_PUBLIC_STUNTDOUBLE_TOKEN ?? '';
+        const token = process.env.NEXT_PUBLIC_AGENTSH_TOKEN ?? process.env.NEXT_PUBLIC_STUNTDOUBLE_TOKEN ?? '';
         const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
         const res = await fetch('http://localhost:4439/api/stats', { headers });
         if (!res.ok) throw new Error("API Offline");

@@ -1,4 +1,4 @@
-name: Release StuntDouble CLI
+name: Release agentsh CLI
 
 on:
   push:
@@ -28,22 +28,29 @@ jobs:
       - name: Build Binaries
         working-directory: ./cli
         run: |
-          GOOS=linux GOARCH=amd64 go build -o stuntdouble-linux-amd64
-          GOOS=linux GOARCH=arm64 go build -o stuntdouble-linux-arm64
-          GOOS=darwin GOARCH=amd64 go build -o stuntdouble-darwin-amd64
-          GOOS=darwin GOARCH=arm64 go build -o stuntdouble-darwin-arm64
-          GOOS=windows GOARCH=amd64 go build -o stuntdouble-windows-amd64.exe
+          GOOS=linux GOARCH=amd64 go build -o agentsh-linux-amd64
+          GOOS=linux GOARCH=arm64 go build -o agentsh-linux-arm64
+          GOOS=darwin GOARCH=amd64 go build -o agentsh-darwin-amd64
+          GOOS=darwin GOARCH=arm64 go build -o agentsh-darwin-arm64
+          GOOS=windows GOARCH=amd64 go build -o agentsh-windows-amd64.exe
+          # Retain legacy binary names for backwards-compatibility
+          cp agentsh-linux-amd64 stuntdouble-linux-amd64
+          cp agentsh-linux-arm64 stuntdouble-linux-arm64
+          cp agentsh-darwin-amd64 stuntdouble-darwin-amd64
+          cp agentsh-darwin-arm64 stuntdouble-darwin-arm64
+          cp agentsh-windows-amd64.exe stuntdouble-windows-amd64.exe
 
       # install.sh refuses to install without a matching checksum, so the
       # release must publish SHA256SUMS alongside the binaries.
       - name: Generate checksums
         working-directory: ./cli
-        run: sha256sum stuntdouble-* > SHA256SUMS
+        run: sha256sum agentsh-* stuntdouble-* > SHA256SUMS
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           files: |
+            cli/agentsh-*
             cli/stuntdouble-*
             cli/SHA256SUMS
           overwrite_files: true

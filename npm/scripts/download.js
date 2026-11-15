@@ -1,9 +1,9 @@
 //
-// Shared, verified downloader for the StuntDouble core binary.
+// Shared, verified downloader for the agentsh core binary.
 //
 // Used by two callers:
 //   - scripts/postinstall.js — eager fetch at install time (the happy path)
-//   - bin/stuntdouble.js     — lazy fetch on first run, for when the postinstall
+//   - bin/agentsh.js         — lazy fetch on first run, for when the postinstall
 //                              never ran. npm 11.19+ withholds install scripts
 //                              pending `npm install-scripts approve`, and pnpm
 //                              /yarn have comparable gating, so a package that
@@ -21,24 +21,25 @@ const crypto = require('crypto');
 const REPO = 'itsrohan-lang/agentsh';
 const MAX_REDIRECTS = 5;
 
-// release.yml publishes exactly these asset names; keep the two in sync.
+// release.yml publishes both agentsh-* and stuntdouble-* asset names; keep in sync.
 const TARGETS = {
-  'linux:x64': 'stuntdouble-linux-amd64',
-  'linux:arm64': 'stuntdouble-linux-arm64',
-  'darwin:x64': 'stuntdouble-darwin-amd64',
-  'darwin:arm64': 'stuntdouble-darwin-arm64',
-  'win32:x64': 'stuntdouble-windows-amd64.exe',
+  'linux:x64': ['agentsh-linux-amd64', 'stuntdouble-linux-amd64'],
+  'linux:arm64': ['agentsh-linux-arm64', 'stuntdouble-linux-arm64'],
+  'darwin:x64': ['agentsh-darwin-amd64', 'stuntdouble-darwin-amd64'],
+  'darwin:arm64': ['agentsh-darwin-arm64', 'stuntdouble-darwin-arm64'],
+  'win32:x64': ['agentsh-windows-amd64.exe', 'stuntdouble-windows-amd64.exe'],
 };
 
 const binDir = path.resolve(__dirname, '..', 'bin');
-const binaryPath = path.join(binDir, process.platform === 'win32' ? 'sd.exe' : 'sd');
+const binaryName = process.platform === 'win32' ? 'agentsh.exe' : 'agentsh';
+const binaryPath = path.join(binDir, binaryName);
 
 class DownloadError extends Error {}
 
 function get(url, version, redirectsLeft = MAX_REDIRECTS) {
   return new Promise((resolve, reject) => {
     https
-      .get(url, { headers: { 'User-Agent': `stuntdouble-npm/${version}` } }, (res) => {
+      .get(url, { headers: { 'User-Agent': `agentsh-npm/${version}` } }, (res) => {
         // GitHub redirects release downloads to a CDN host; follow manually.
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           res.resume();
@@ -64,8 +65,8 @@ async function fetchBinary({ log = () => {} } = {}) {
   const pkg = require('../package.json');
 
   const key = `${process.platform}:${process.arch}`;
-  const asset = TARGETS[key];
-  if (!asset) {
+  const candidateAssets = TARGETS[key];
+  if (!candidateAssets || candidateAssets.length === 0) {
     throw new DownloadError(
       `unsupported platform ${key}.\n` +
         `Supported: ${Object.keys(TARGETS).join(', ')}.\n` +
@@ -73,20 +74,30 @@ async function fetchBinary({ log = () => {} } = {}) {
     );
   }
 
-  const tag = process.env.STUNTDOUBLE_VERSION || `v${pkg.version}`;
+  const tag = process.env.AGENTSH_VERSION || process.env.STUNTDOUBLE_VERSION || `v${pkg.version}`;
   const base = `https://github.com/${REPO}/releases/download/${tag}`;
 
-  log(`stuntdouble: downloading ${asset} (${tag})...`);
-
   let binary;
-  try {
-    binary = await get(`${base}/${asset}`, pkg.version);
-  } catch (err) {
+  let assetUsed;
+  let lastErr;
+
+  for (const asset of candidateAssets) {
+    try {
+      log(`agentsh: downloading ${asset} (${tag})...`);
+      binary = await get(`${base}/${asset}`, pkg.version);
+      assetUsed = asset;
+      break;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+
+  if (!binary || !assetUsed) {
     throw new DownloadError(
-      `download failed: ${base}/${asset}\n` +
-        `${err.message}\n` +
+      `download failed for ${candidateAssets.join(' / ')} at ${base}\n` +
+        `${lastErr ? lastErr.message : ''}\n` +
         `If release ${tag} has no asset for this platform, install from source or set ` +
-        `STUNTDOUBLE_SKIP_DOWNLOAD=1 to bypass.`
+        `AGENTSH_SKIP_DOWNLOAD=1 to bypass.`
     );
   }
 
@@ -105,31 +116,49 @@ async function fetchBinary({ log = () => {} } = {}) {
     .toString('utf8')
     .split('\n')
     .map((l) => l.trim().split(/[ \t]+/))
-    .filter((p) => p.length >= 2 && p[1].replace(/^\*/, '') === asset)
+    .filter((p) => p.length >= 2 && p[1].replace(/^\*/, '') === assetUsed)
     .map((p) => p[0])[0];
 
   if (!expected) {
-    throw new DownloadError(`no checksum for ${asset} in SHA256SUMS. Refusing to install.`);
+    throw new DownloadError(`no checksum for ${assetUsed} in SHA256SUMS. Refusing to install.`);
   }
 
   const actual = crypto.createHash('sha256').update(binary).digest('hex');
   if (actual !== expected) {
     throw new DownloadError(
-      `checksum mismatch for ${asset}\n` +
+      `checksum mismatch for ${assetUsed}\n` +
         `  expected: ${expected}\n` +
         `  actual:   ${actual}\n` +
         `The download may be corrupt or tampered with. Nothing was installed.`
     );
   }
 
-  // Write via a unique temp file and rename, so a concurrent `sd` invocation
+  // Write via a unique temp file and rename, so a concurrent `agentsh` invocation
   // never observes a half-written binary.
   fs.mkdirSync(binDir, { recursive: true });
   const tmp = `${binaryPath}.${process.pid}.tmp`;
   fs.writeFileSync(tmp, binary, { mode: 0o755 });
   fs.renameSync(tmp, binaryPath);
 
-  log(`stuntdouble: checksum verified, core installed (${tag}).`);
+  // Link or copy backward-compatible alias binaries (ash, sd, stuntdouble)
+  const ext = process.platform === 'win32' ? '.exe' : '';
+  for (const alias of ['ash', 'sd', 'stuntdouble']) {
+    const aliasPath = path.join(binDir, `${alias}${ext}`);
+    try {
+      if (fs.existsSync(aliasPath)) {
+        fs.unlinkSync(aliasPath);
+      }
+      if (process.platform === 'win32') {
+        fs.copyFileSync(binaryPath, aliasPath);
+      } else {
+        fs.symlinkSync(binaryName, aliasPath);
+      }
+    } catch {
+      // Alias failure is non-fatal
+    }
+  }
+
+  log(`agentsh: checksum verified, core installed (${tag}).`);
   return binaryPath;
 }
 

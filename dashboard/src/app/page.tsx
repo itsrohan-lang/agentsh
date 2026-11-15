@@ -3,8 +3,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { Activity, Terminal, Lock } from 'lucide-react';
 
-const CONTROL_PLANE = process.env.NEXT_PUBLIC_STUNTDOUBLE_URL ?? 'http://localhost:4439';
-const TOKEN = process.env.NEXT_PUBLIC_STUNTDOUBLE_TOKEN ?? '';
+const CONTROL_PLANE = process.env.NEXT_PUBLIC_AGENTSH_URL ?? process.env.NEXT_PUBLIC_STUNTDOUBLE_URL ?? 'http://localhost:4439';
+const TOKEN = process.env.NEXT_PUBLIC_AGENTSH_TOKEN ?? process.env.NEXT_PUBLIC_STUNTDOUBLE_TOKEN ?? '';
 
 type AuditRow = {
   id: number;
@@ -144,8 +144,8 @@ export default function Dashboard() {
         {!TOKEN && (
           <div className="border border-[#eab308]/40 bg-[#eab308]/10 text-[#eab308] px-6 py-4 rounded-2xl text-sm">
             <b>No API token configured.</b> The control plane requires a bearer token.
-            Set <code className="font-mono">NEXT_PUBLIC_STUNTDOUBLE_TOKEN</code> to the same
-            value as <code className="font-mono">STUNTDOUBLE_TOKEN</code> on the server.
+            Set <code className="font-mono">NEXT_PUBLIC_AGENTSH_TOKEN</code> to the same
+            value as <code className="font-mono">AGENTSH_TOKEN</code> on the server.
           </div>
         )}
 
