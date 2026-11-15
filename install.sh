@@ -13,7 +13,7 @@
 #
 set -euo pipefail
 
-REPO="itsrohan-lang/stuntdouble"
+REPO="itsrohan-lang/agentsh"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 
 die() {

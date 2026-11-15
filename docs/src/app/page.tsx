@@ -29,7 +29,7 @@ export default function Home() {
             <a className="btn-primary rounded-full px-8 py-4 font-bold text-md tracking-wide cursor-pointer" href="#quickstart">
               Install Native CLI
             </a>
-            <a className="rounded-full px-8 py-4 font-bold text-md tracking-wide text-zinc-300 border border-zinc-700 hover:bg-zinc-800 transition-colors cursor-pointer flex items-center gap-2" href="https://github.com/itsrohan-lang/stuntdouble" target="_blank" rel="noopener noreferrer">
+            <a className="rounded-full px-8 py-4 font-bold text-md tracking-wide text-zinc-300 border border-zinc-700 hover:bg-zinc-800 transition-colors cursor-pointer flex items-center gap-2" href="https://github.com/itsrohan-lang/agentsh" target="_blank" rel="noopener noreferrer">
               Read the Docs
             </a>
           </div>
@@ -39,9 +39,9 @@ export default function Home() {
         <section id="quickstart" className="w-full mt-24 max-w-3xl flex flex-col items-center">
           <div className="glass-card p-2 w-full flex items-center justify-between border-zinc-800 bg-[#0d0d12]/80 backdrop-blur-xl pl-6 rounded-2xl shadow-2xl">
             <code className="text-zinc-300 font-mono text-sm overflow-x-auto whitespace-nowrap hide-scrollbar">
-              <span className="text-[#00f0ff]">curl</span> -sSL https://raw.githubusercontent.com/itsrohan-lang/stuntdouble/main/install.sh | bash
+              <span className="text-[#00f0ff]">curl</span> -sSL https://raw.githubusercontent.com/itsrohan-lang/agentsh/main/install.sh | bash
             </code>
-            <button className="bg-zinc-800 hover:bg-zinc-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition cursor-pointer ml-4 flex-shrink-0" onClick={() => navigator.clipboard.writeText('curl -sSL https://raw.githubusercontent.com/itsrohan-lang/stuntdouble/main/install.sh | bash')}>
+            <button className="bg-zinc-800 hover:bg-zinc-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition cursor-pointer ml-4 flex-shrink-0" onClick={() => navigator.clipboard.writeText('curl -sSL https://raw.githubusercontent.com/itsrohan-lang/agentsh/main/install.sh | bash')}>
               Copy
             </button>
           </div>

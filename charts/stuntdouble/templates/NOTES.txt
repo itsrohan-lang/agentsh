@@ -41,7 +41,7 @@ socket mount that is equivalent to root on every node.
 
 Before relying on this chart for anything, read:
 
-  https://github.com/itsrohan-lang/stuntdouble/blob/main/docs/ENFORCEMENT.md
+  https://github.com/itsrohan-lang/agentsh/blob/main/docs/ENFORCEMENT.md
 
 It documents precisely what StuntDouble does and does not enforce. The short
 version: the container isolation and git-based rollback are real; the network

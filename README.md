@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/itsrohan-lang/stuntdouble/main/docs/assets/logo.png" alt="agentsh Logo" width="160" height="160" />
+  <img src="https://raw.githubusercontent.com/itsrohan-lang/agentsh/main/docs/assets/logo.png" alt="agentsh Logo" width="160" height="160" />
   <h1>🛡️ agentsh</h1>
   <p><b>A restricted container shell & instant rollback environment for autonomous AI coding agents</b></p>
 
@@ -44,7 +44,7 @@ See [docs/ENFORCEMENT.md](./docs/ENFORCEMENT.md) for the full boundary and the p
 ### 1. Install the CLI
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/itsrohan-lang/stuntdouble/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/itsrohan-lang/agentsh/main/install.sh | bash
 ```
 
 Installs `agentsh` with aliases `ash`, `sd`, and `stuntdouble` to `/usr/local/bin` after verifying the SHA-256 release checksum.
@@ -58,7 +58,7 @@ npm install -g stuntdouble-sandbox-cli
 ### Uninstallation
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/itsrohan-lang/stuntdouble/main/uninstall.sh | bash
+curl -sSL https://raw.githubusercontent.com/itsrohan-lang/agentsh/main/uninstall.sh | bash
 ```
 
 ### 2. Sandbox an agent

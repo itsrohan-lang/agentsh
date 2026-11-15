@@ -18,7 +18,7 @@ const path = require('path');
 const https = require('https');
 const crypto = require('crypto');
 
-const REPO = 'itsrohan-lang/stuntdouble';
+const REPO = 'itsrohan-lang/agentsh';
 const MAX_REDIRECTS = 5;
 
 // release.yml publishes exactly these asset names; keep the two in sync.

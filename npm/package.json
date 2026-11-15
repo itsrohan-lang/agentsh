@@ -23,11 +23,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/itsrohan-lang/stuntdouble.git"
+    "url": "git+https://github.com/itsrohan-lang/agentsh.git"
   },
-  "homepage": "https://github.com/itsrohan-lang/stuntdouble#readme",
+  "homepage": "https://github.com/itsrohan-lang/agentsh#readme",
   "bugs": {
-    "url": "https://github.com/itsrohan-lang/stuntdouble/issues"
+    "url": "https://github.com/itsrohan-lang/agentsh/issues"
   },
   "keywords": [
     "ai",

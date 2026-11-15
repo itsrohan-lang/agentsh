@@ -35,7 +35,7 @@ StuntDouble runs autonomous coding agents inside a restricted Docker container w
 - Scoped workspace mount
 - Git-based snapshot rollback
 
-**Network egress filtering is NOT implemented.** Sandboxed agents can still reach the network. See [ENFORCEMENT.md](https://github.com/itsrohan-lang/stuntdouble/blob/main/docs/ENFORCEMENT.md) for what is and is not enforced.
+**Network egress filtering is NOT implemented.** Sandboxed agents can still reach the network. See [ENFORCEMENT.md](https://github.com/itsrohan-lang/agentsh/blob/main/docs/ENFORCEMENT.md) for what is and is not enforced.
 
 ## Platform support
 
@@ -44,13 +44,13 @@ Pre-built binaries are available for:
 - macOS (x64, ARM64)
 - Windows (x64)
 
-If your platform isn't supported, [build from source](https://github.com/itsrohan-lang/stuntdouble).
+If your platform isn't supported, [build from source](https://github.com/itsrohan-lang/agentsh).
 
 ## Documentation
 
 Full documentation, deployment guides, and enforcement details:
 
-**https://github.com/itsrohan-lang/stuntdouble**
+**https://github.com/itsrohan-lang/agentsh**
 
 ## License
 

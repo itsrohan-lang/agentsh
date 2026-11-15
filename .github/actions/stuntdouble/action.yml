@@ -26,7 +26,7 @@ runs:
         
         # Simulate installation for the composite action
         if [ ! -f "/usr/local/bin/sd" ]; then
-          curl -sSL https://github.com/itsrohan-lang/stuntdouble/releases/latest/download/sd-linux-amd64 -o sd || true
+          curl -sSL https://github.com/itsrohan-lang/agentsh/releases/latest/download/sd-linux-amd64 -o sd || true
           chmod +x sd || true
           sudo mv sd /usr/local/bin/sd || echo "Warning: Could not install sd to /usr/local/bin"
         fi

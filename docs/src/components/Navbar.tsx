@@ -24,7 +24,7 @@ export default function Navbar() {
         </Link>
         <a 
           className="bg-white text-black px-5 py-2 rounded-full text-sm font-bold hover:bg-zinc-200 transition shadow-[0_0_15px_rgba(255,255,255,0.3)]" 
-          href="https://github.com/itsrohan-lang/stuntdouble" 
+          href="https://github.com/itsrohan-lang/agentsh" 
           target="_blank" 
           rel="noopener noreferrer"
         >

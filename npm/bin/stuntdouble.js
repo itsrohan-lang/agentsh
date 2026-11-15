@@ -35,7 +35,7 @@ if (fs.existsSync(binaryPath)) {
       console.error(
         `\nstuntdouble: could not obtain the core binary.\n${detail}\n\n` +
           `Alternatively install the CLI directly:\n` +
-          `  curl -fsSL https://raw.githubusercontent.com/itsrohan-lang/stuntdouble/main/install.sh | sh\n`
+          `  curl -fsSL https://raw.githubusercontent.com/itsrohan-lang/agentsh/main/install.sh | sh\n`
       );
       process.exit(1);
     });
