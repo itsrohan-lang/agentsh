@@ -11,24 +11,30 @@ import (
 )
 
 // SpawnSwarm orchestrates multiple agents inside an isolated Docker bridge network
-func (sdc *StuntDockerClient) SpawnSwarm(ctx context.Context, agents []string, mountDir string) error {
+func (sdc *StuntDockerClient) SpawnSwarm(ctx context.Context, agents []string, mountDir string, internalOnly bool) error {
 	networkName := "stuntnet-01"
 
 	// 1. Create the isolated Virtual Network
-	fmt.Printf(">> [Native Engine] Provisioning isolated bridge network: %s\n", networkName)
+	fmt.Printf(">> [Native Engine] Provisioning isolated bridge network: %s (internal=%v)\n", networkName, internalOnly)
 	netResp, err := sdc.cli.NetworkCreate(ctx, networkName, network.CreateOptions{
 		Driver:   "bridge",
-		Internal: true, // completely block external internet access for the swarm
+		Internal: internalOnly,
 	})
+	networkID := ""
 	if err != nil {
 		// Ignore error if network already exists
 		if !strings.Contains(err.Error(), "already exists") {
 			return fmt.Errorf("failed to create StuntNet: %w", err)
 		}
+	} else {
+		networkID = netResp.ID
 	}
+
 	defer func() {
-		fmt.Printf(">> [Native Engine] Tearing down StuntNet: %s\n", networkName)
-		sdc.cli.NetworkRemove(context.Background(), netResp.ID)
+		if networkID != "" {
+			fmt.Printf(">> [Native Engine] Tearing down StuntNet: %s\n", networkName)
+			sdc.cli.NetworkRemove(context.Background(), networkID)
+		}
 	}()
 
 	var containerIDs []string
@@ -45,7 +51,7 @@ func (sdc *StuntDockerClient) SpawnSwarm(ctx context.Context, agents []string, m
 				"OPENAI_API_KEY=" + proxy.DummyOpenAIKey,
 			},
 			Labels: map[string]string{
-				"stuntdouble.swarm": "true",
+				"agentsh.swarm": "true",
 			},
 		}, &container.HostConfig{
 			CapDrop:     []string{"ALL"},
@@ -66,10 +72,12 @@ func (sdc *StuntDockerClient) SpawnSwarm(ctx context.Context, agents []string, m
 
 	fmt.Println("\n✅ StuntNet Swarm is Live!")
 	fmt.Printf("🔒 Agents can communicate via http://stunt-node-X inside the sandbox.\n")
-	fmt.Println("⚠️ External internet access is completely hard-blocked by Docker network rules.")
+	if internalOnly {
+		fmt.Println("⚠️ External internet access is completely blocked (offline mode).")
+	}
 
 	// Wait for context cancellation (Ctrl+C)
-	fmt.Println("\nPress Ctrl+C to safely terminate the swarm and wipe the network...")
+	fmt.Println("\nPress Ctrl+C to safely terminate the swarm and clean up the network...")
 	<-ctx.Done()
 
 	// 3. Tear down the swarm
