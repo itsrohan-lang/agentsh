@@ -24,15 +24,18 @@ This reports how many sandboxed sessions ran. It does not report blocked network
 connections: kernel-level egress filtering is not implemented, so no connections
 are blocked or counted.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		const telemetryFile = ".stuntdouble.telemetry.json"
-
+		telemetryFile := ".agentsh.telemetry.json"
 		data, err := os.ReadFile(telemetryFile)
+		if os.IsNotExist(err) {
+			telemetryFile = ".stuntdouble.telemetry.json"
+			data, err = os.ReadFile(telemetryFile)
+		}
 		if os.IsNotExist(err) {
 			fmt.Println("No runs recorded in this directory yet.")
 			return nil
 		}
 		if err != nil {
-			return fmt.Errorf("reading %s: %w", telemetryFile, err)
+			return fmt.Errorf("reading telemetry: %w", err)
 		}
 
 		var stats TelemetryData
@@ -40,7 +43,7 @@ are blocked or counted.`,
 			return fmt.Errorf("parsing %s: %w", telemetryFile, err)
 		}
 
-		fmt.Println("StuntDouble local run history")
+		fmt.Println("agentsh local run history")
 		fmt.Println("=============================")
 		fmt.Printf("Total agent sessions: %d\n", stats.TotalRuns)
 		if !stats.LastRun.IsZero() {

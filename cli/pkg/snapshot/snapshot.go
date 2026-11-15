@@ -51,18 +51,25 @@ func Create(workspace string) error {
 	treeHash := strings.TrimSpace(string(out))
 
 	// Save the tree hash
-	stuntDir := filepath.Join(workspace, ".stuntdouble")
+	stuntDir := getStorageDir(workspace)
 	os.MkdirAll(stuntDir, 0755)
 	snapshotFile := filepath.Join(stuntDir, "latest_snapshot.txt")
 	if err := os.WriteFile(snapshotFile, []byte(treeHash), 0644); err != nil {
 		return err
 	}
 
-	fmt.Printf("📸 [StuntDouble] Zero-copy workspace snapshot captured (Tree: %s)\n", treeHash[:8])
+	fmt.Printf("📸 [agentsh] Zero-copy workspace snapshot captured (Tree: %s)\n", treeHash[:8])
 	return nil
 }
 
-// SaveCheckpoint creates a named workspace snapshot saved in .stuntdouble/checkpoints/<name>.txt
+func getStorageDir(workspace string) string {
+	if _, err := os.Stat(filepath.Join(workspace, ".agentsh")); err == nil {
+		return filepath.Join(workspace, ".agentsh")
+	}
+	return filepath.Join(workspace, ".stuntdouble")
+}
+
+// SaveCheckpoint creates a named workspace snapshot saved in .agentsh/checkpoints/<name>.txt
 func SaveCheckpoint(workspace, name string) error {
 	if name == "" {
 		return fmt.Errorf("checkpoint name cannot be empty")
@@ -73,7 +80,7 @@ func SaveCheckpoint(workspace, name string) error {
 		return fmt.Errorf("failed to capture workspace tree: %w", err)
 	}
 
-	checkpointDir := filepath.Join(workspace, ".stuntdouble", "checkpoints")
+	checkpointDir := filepath.Join(getStorageDir(workspace), "checkpoints")
 	if err := os.MkdirAll(checkpointDir, 0755); err != nil {
 		return err
 	}
@@ -83,16 +90,22 @@ func SaveCheckpoint(workspace, name string) error {
 		return err
 	}
 
-	fmt.Printf("🔖 [StuntDouble] Checkpoint %q saved (Tree: %s)\n", name, treeHash[:8])
+	fmt.Printf("🔖 [agentsh] Checkpoint %q saved (Tree: %s)\n", name, treeHash[:8])
 	return nil
 }
 
 // RestoreCheckpoint rewinds workspace to a previously saved named checkpoint
 func RestoreCheckpoint(workspace, name string) error {
-	checkpointFile := filepath.Join(workspace, ".stuntdouble", "checkpoints", name+".txt")
+	checkpointFile := filepath.Join(getStorageDir(workspace), "checkpoints", name+".txt")
 	data, err := os.ReadFile(checkpointFile)
 	if err != nil {
-		return fmt.Errorf("checkpoint %q not found: %w", name, err)
+		// Fallback check in .stuntdouble if getStorageDir returned .agentsh
+		fallbackFile := filepath.Join(workspace, ".stuntdouble", "checkpoints", name+".txt")
+		var fallbackErr error
+		data, fallbackErr = os.ReadFile(fallbackFile)
+		if fallbackErr != nil {
+			return fmt.Errorf("checkpoint %q not found: %w", name, err)
+		}
 	}
 
 	treeHash := strings.TrimSpace(string(data))
@@ -100,14 +113,19 @@ func RestoreCheckpoint(workspace, name string) error {
 		return fmt.Errorf("failed to restore checkpoint %q: %w", name, err)
 	}
 
-	fmt.Printf("⏪ [StuntDouble] Workspace rewound to checkpoint %q (Tree: %s)\n", name, treeHash[:8])
+	fmt.Printf("⏪ [agentsh] Workspace rewound to checkpoint %q (Tree: %s)\n", name, treeHash[:8])
 	return nil
 }
 
 // ListCheckpoints returns all saved checkpoint names
 func ListCheckpoints(workspace string) ([]string, error) {
-	checkpointDir := filepath.Join(workspace, ".stuntdouble", "checkpoints")
+	checkpointDir := filepath.Join(getStorageDir(workspace), "checkpoints")
 	entries, err := os.ReadDir(checkpointDir)
+	if err != nil && os.IsNotExist(err) {
+		// Try fallback
+		checkpointDir = filepath.Join(workspace, ".stuntdouble", "checkpoints")
+		entries, err = os.ReadDir(checkpointDir)
+	}
 	if err != nil {
 		if os.IsNotExist(err) {
 			return []string{}, nil
@@ -173,10 +191,15 @@ func restoreTreeHash(workspace, treeHash string) error {
 
 // Restore rewinds the workspace to the latest captured snapshot
 func Restore(workspace string) error {
-	snapshotFile := filepath.Join(workspace, ".stuntdouble", "latest_snapshot.txt")
+	snapshotFile := filepath.Join(getStorageDir(workspace), "latest_snapshot.txt")
 	data, err := os.ReadFile(snapshotFile)
 	if err != nil {
-		return fmt.Errorf("no StuntDouble snapshot found: %w", err)
+		fallbackFile := filepath.Join(workspace, ".agentsh", "latest_snapshot.txt")
+		var fallbackErr error
+		data, fallbackErr = os.ReadFile(fallbackFile)
+		if fallbackErr != nil {
+			return fmt.Errorf("no StuntDouble snapshot found: %w", err)
+		}
 	}
 
 	treeHash := strings.TrimSpace(string(data))

@@ -59,8 +59,16 @@ function createTray() {
 }
 
 function startAuditPolling() {
+  const token = process.env.STUNTDOUBLE_TOKEN || process.env.AGENTSH_TOKEN || '';
+  const options = {
+    hostname: 'localhost',
+    port: 4439,
+    path: '/api/audit',
+    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+  };
+
   setInterval(() => {
-    http.get('http://localhost:4439/api/audit', (res) => {
+    http.get(options, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
@@ -69,9 +77,9 @@ function startAuditPolling() {
           if (logs && logs.length > 0) {
             const latestLog = logs[0];
             if (latestLog.id > lastSeenLogId) {
-              if (lastSeenLogId !== 0 && latestLog.status.includes('Blocked')) {
+              if (lastSeenLogId !== 0 && latestLog.status && latestLog.status.includes('Blocked')) {
                 new Notification({
-                  title: '🚨 StuntDouble Security Alert',
+                  title: '🚨 agentsh Security Alert',
                   body: `Agent '${latestLog.agent_id}' was blocked from accessing '${latestLog.target}'!`,
                   icon: path.join(__dirname, '..', 'docs', 'assets', 'logo.png')
                 }).show();

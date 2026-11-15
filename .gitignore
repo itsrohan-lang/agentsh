@@ -4,7 +4,12 @@
 # Go
 /cli/sd
 /cli/sd.exe
+/cli/ash
+/cli/ash.exe
+/cli/agentsh
+/cli/agentsh.exe
 *.test
+!Dockerfile.test
 *.prof
 
 # Node
@@ -25,6 +30,7 @@ terraform-provider-stuntdouble/bin/
 
 # Config files (for testing)
 .stuntdouble.yaml
+.agentsh.yaml
 
 # IDE
 .idea/
@@ -32,7 +38,9 @@ terraform-provider-stuntdouble/bin/
 
 # Build Artifacts & Binaries
 stuntdouble-*
+agentsh-*
 /cli/stuntdouble-*
+/cli/agentsh-*
 /control-plane/cp
 /control-plane/cp-*
 /control-plane/control-plane
@@ -42,10 +50,14 @@ stuntdouble-*
 # never committed (a single binary can only ever match one platform).
 /npm/bin/sd
 /npm/bin/sd.exe
+/npm/bin/ash
+/npm/bin/agentsh
 
-# StuntDouble Local State
+# agentsh / StuntDouble Local State
 .stuntdouble.telemetry.json
+.agentsh.telemetry.json
 .stuntdouble/
+.agentsh/
 k8s-operator/bin/
 
 # wasm build artifacts — wasm_exec.js is copied from Go stdlib by build.sh

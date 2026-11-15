@@ -1,8 +1,8 @@
-name: "StuntDouble Safe execution"
-description: "Executes an AI-generated pull request inside a zero-trust StuntDouble sandbox."
+name: "agentsh Safe execution"
+description: "Executes an AI-generated pull request inside a restricted agentsh container shell."
 inputs:
   agent:
-    description: "The AI agent to run (e.g. claude, aider)"
+    description: "The AI agent to run (e.g. claude, aider, sh)"
     required: true
     default: "claude"
   command:
@@ -11,12 +11,12 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Download StuntDouble CLI
+    - name: Download agentsh CLI
       shell: bash
       run: |
         curl -sSL https://raw.githubusercontent.com/itsrohan-lang/stuntdouble/main/install.sh | bash
-        echo "$HOME/.stuntdouble/bin" >> $GITHUB_PATH
+        echo "/usr/local/bin" >> $GITHUB_PATH
     
     - name: Run Agent in Sandbox
       shell: bash
-      run: stuntdouble run ${{ inputs.agent }} ${{ inputs.command }}
+      run: agentsh run ${{ inputs.agent }} --allow-unenforced-network -- ${{ inputs.command }}

@@ -23,7 +23,7 @@ done
 echo "🗑️ Uninstalling StuntDouble CLI..."
 
 # 1. Remove binary files from INSTALL_DIR
-for binary in "stuntdouble" "sd"; do
+for binary in "agentsh" "ash" "stuntdouble" "sd"; do
     target="${INSTALL_DIR}/${binary}"
     if [ -f "$target" ] || [ -L "$target" ]; then
         echo ">> Removing ${target}..."
@@ -46,9 +46,9 @@ fi
 
 # 3. Purge workspace files if requested
 if [ "$PURGE" = true ]; then
-    echo ">> Purging local .stuntdouble configuration directory..."
-    rm -rf .stuntdouble .stuntdouble.yaml .stuntdouble.telemetry.json
+    echo ">> Purging local .agentsh / .stuntdouble configuration directory..."
+    rm -rf .agentsh .agentsh.yaml .stuntdouble .stuntdouble.yaml .stuntdouble.telemetry.json
 fi
 
 echo ""
-echo "✅ StuntDouble has been successfully uninstalled from your system."
+echo "✅ agentsh / StuntDouble has been successfully uninstalled from your system."

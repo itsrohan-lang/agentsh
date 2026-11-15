@@ -69,15 +69,16 @@ func (sdc *StuntDockerClient) SpawnIsolatedAgent(ctx context.Context, agentCmd [
 	io.Copy(os.Stdout, reader)
 
 	// Start Zero-Trust API Key substitution proxy
-	fmt.Println(">> [Stunt Layer] Initializing Zero-Trust API Key proxy...")
+	fmt.Println(">> [agentsh] Initializing Zero-Trust API Key proxy...")
 	secProxy := proxy.NewZeroTrustProxy()
 	if _, err := secProxy.Start(ctx); err != nil {
 		fmt.Printf("⚠️ Failed to start zero-trust proxy: %v\n", err)
 	} else {
 		defer secProxy.Stop()
 	}
+	proxyPort := secProxy.GetPort()
 
-	fmt.Println(">> [Stunt Layer] Injecting Keploy proxy sidecar...")
+	fmt.Println(">> [agentsh] Injecting Keploy proxy sidecar...")
 
 	// 1. Start the Keploy proxy sidecar in the background. Use a unique name so
 	// two repos with the same basename can run concurrently, and avoid publishing
@@ -90,6 +91,7 @@ func (sdc *StuntDockerClient) SpawnIsolatedAgent(ctx context.Context, agentCmd [
 	sidecarArgs := []string{
 		"run", "-d", "--rm",
 		"--name", sidecarName,
+		"--add-host=host.docker.internal:host-gateway",
 		"--cap-add=NET_ADMIN", // Keploy requires network capabilities to intercept traffic
 		"ghcr.io/keploy/keploy:v2",
 	}
@@ -102,7 +104,7 @@ func (sdc *StuntDockerClient) SpawnIsolatedAgent(ctx context.Context, agentCmd [
 	} else {
 		// Ensure the sidecar is cleaned up after the agent finishes
 		defer func() {
-			fmt.Println(">> [Stunt Layer] Tearing down Keploy sidecar...")
+			fmt.Println(">> [agentsh] Tearing down Keploy sidecar...")
 			exec.Command("docker", "kill", sidecarName).Run()
 		}()
 	}
@@ -123,6 +125,21 @@ func (sdc *StuntDockerClient) SpawnIsolatedAgent(ctx context.Context, agentCmd [
 		"--cpus=1.0",
 		"-e", fmt.Sprintf("ANTHROPIC_API_KEY=%s", proxy.DummyAnthropicKey),
 		"-e", fmt.Sprintf("OPENAI_API_KEY=%s", proxy.DummyOpenAIKey),
+	}
+
+	if proxyPort > 0 {
+		proxyURL := fmt.Sprintf("http://host.docker.internal:%d", proxyPort)
+		args = append(args,
+			"-e", fmt.Sprintf("HTTP_PROXY=%s", proxyURL),
+			"-e", fmt.Sprintf("HTTPS_PROXY=%s", proxyURL),
+			"-e", fmt.Sprintf("http_proxy=%s", proxyURL),
+			"-e", fmt.Sprintf("https_proxy=%s", proxyURL),
+			"-e", fmt.Sprintf("ANTHROPIC_BASE_URL=%s", proxyURL),
+			"-e", fmt.Sprintf("OPENAI_BASE_URL=%s/v1", proxyURL),
+		)
+		if !useSidecar {
+			args = append(args, "--add-host=host.docker.internal:host-gateway")
+		}
 	}
 
 	if useSidecar {

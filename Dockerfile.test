@@ -1,0 +1,12 @@
+FROM golang:1.24-alpine
+
+RUN apk add --no-cache git bash curl build-base
+
+WORKDIR /workspace
+
+# Copy workspace source files
+COPY . .
+
+# Run the complete test suite in isolated container
+RUN chmod +x ./scripts/run-all-tests.sh
+ENTRYPOINT ["./scripts/run-all-tests.sh"]

@@ -6,10 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/stuntdouble/cli/pkg/config"
 	"github.com/stuntdouble/cli/pkg/docker"
 	"github.com/stuntdouble/cli/pkg/ebpf"
 	"github.com/stuntdouble/cli/pkg/snapshot"
@@ -77,7 +79,13 @@ var runCmd = &cobra.Command{
 			return fmt.Errorf("attaching egress filter: %w", err)
 		}
 
-		fmt.Printf("🚀 Starting StuntDouble sandbox for agent: %s\n", agentName)
+		fmt.Printf("🚀 Starting agentsh sandbox for agent: %s\n", agentName)
+
+		if pol, polPath, err := config.LoadPolicyFile(cwd); err != nil {
+			fmt.Printf("⚠️ Error loading policy file %s: %v\n", polPath, err)
+		} else if pol != nil {
+			fmt.Printf("📄 Loaded configuration from %s (mode: %s)\n", filepath.Base(polPath), pol.Config.EnforcementMode)
+		}
 
 		agentCmd := resolveAgentCommand(agentName, forwardedArgs)
 
@@ -143,7 +151,10 @@ func resolveAgentCommand(agentName string, extraArgs []string) []string {
 // dashboard. It counts runs only: there is no blocked-connection count to report
 // while egress filtering is unimplemented.
 func recordRun() {
-	const file = ".stuntdouble.telemetry.json"
+	file := ".agentsh.telemetry.json"
+	if _, err := os.Stat(".stuntdouble.telemetry.json"); err == nil {
+		file = ".stuntdouble.telemetry.json"
+	}
 
 	stats := struct {
 		TotalRuns int       `json:"total_runs"`

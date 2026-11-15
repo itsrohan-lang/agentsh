@@ -8,9 +8,10 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "sd",
-	Short: "StuntDouble - run AI coding agents in an isolated container",
-	Long: `StuntDouble runs autonomous coding agents inside a restricted Docker container
+	Use:     "agentsh",
+	Aliases: []string{"ash", "sd", "stuntdouble"},
+	Short:   "agentsh - run AI coding agents in an isolated container shell",
+	Long: `agentsh runs autonomous coding agents inside a restricted Docker container
 with dropped capabilities, memory and CPU limits, and a scoped workspace mount,
 and can snapshot the workspace so agent changes can be reverted.
 

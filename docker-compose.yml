@@ -10,16 +10,19 @@ services:
       - stunt_audit_data:/app/db
     environment:
       - GIN_MODE=release
+      - STUNTDOUBLE_TOKEN=${STUNTDOUBLE_TOKEN:-agentsh-dev-token-secret-32b}
     restart: unless-stopped
 
   dashboard:
-    build:
+    build: 
       context: ./dashboard
     ports:
       - "3000:3000"
     depends_on:
       - control-plane
     environment:
+      - NEXT_PUBLIC_STUNTDOUBLE_URL=http://localhost:4439
+      - NEXT_PUBLIC_STUNTDOUBLE_TOKEN=${STUNTDOUBLE_TOKEN:-agentsh-dev-token-secret-32b}
       - NEXT_PUBLIC_CONTROL_PLANE_URL=http://localhost:4439
     restart: unless-stopped
 

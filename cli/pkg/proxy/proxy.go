@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -48,11 +49,15 @@ func (p *ZeroTrustProxy) SetStrictDLP(strict bool) {
 	p.StrictDLP = strict
 }
 
-// Start binds to an available loopback port and starts serving requests
+// Start binds to an available interface port and starts serving requests
 func (p *ZeroTrustProxy) Start(ctx context.Context) (string, error) {
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	listener, err := net.Listen("tcp", "0.0.0.0:0")
 	if err != nil {
-		return "", fmt.Errorf("failed to bind proxy listener: %w", err)
+		// Fallback to loopback if 0.0.0.0 is restricted
+		listener, err = net.Listen("tcp", "127.0.0.1:0")
+		if err != nil {
+			return "", fmt.Errorf("failed to bind proxy listener: %w", err)
+		}
 	}
 
 	p.listener = listener
@@ -84,6 +89,16 @@ func (p *ZeroTrustProxy) GetListenAddr() string {
 	return p.listenAddr
 }
 
+// GetPort returns the assigned numeric port of the proxy listener
+func (p *ZeroTrustProxy) GetPort() int {
+	if p.listener != nil {
+		if tcpAddr, ok := p.listener.Addr().(*net.TCPAddr); ok {
+			return tcpAddr.Port
+		}
+	}
+	return 0
+}
+
 // handleProxy performs dummy key substitution and forwards API requests
 func (p *ZeroTrustProxy) handleProxy(w http.ResponseWriter, r *http.Request) {
 	p.mu.RLock()
@@ -95,16 +110,19 @@ func (p *ZeroTrustProxy) handleProxy(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		findings := p.dlpScanner.Scan(path)
 		if len(findings) > 0 {
-			log.Printf("🚨 [StuntDouble DLP] Blocked egress request containing sensitive data: %s", path)
+			log.Printf("🚨 [agentsh DLP] Blocked egress request containing sensitive data: %s", path)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte(`{"error": "Blocked by StuntDouble DLP Engine: Sensitive credential or PII leak detected in egress request"}`))
+			w.Write([]byte(`{"error": "Blocked by agentsh DLP Engine: Sensitive credential or PII leak detected in egress request"}`))
 			return
 		}
 	}
 
-	// 2. Prepare forwarded request
-	outReq, err := http.NewRequestWithContext(r.Context(), r.Method, r.URL.String(), r.Body)
+	// 2. Resolve destination URL (handles proxy absolute URL and BaseURL reverse proxy)
+	targetURL := p.resolveTargetURL(r)
+
+	// Prepare forwarded request
+	outReq, err := http.NewRequestWithContext(r.Context(), r.Method, targetURL, r.Body)
 	if err != nil {
 		http.Error(w, "Failed to create proxy request", http.StatusInternalServerError)
 		return
@@ -117,6 +135,9 @@ func (p *ZeroTrustProxy) handleProxy(w http.ResponseWriter, r *http.Request) {
 	p.substituteSecret(outReq.Header, "x-api-key", DummyAnthropicKey, p.realAnthropic)
 	p.substituteSecret(outReq.Header, "Authorization", DummyAnthropicKey, p.realAnthropic)
 	p.substituteSecret(outReq.Header, "Authorization", DummyOpenAIKey, p.realOpenAI)
+
+	// Remove hop-by-hop headers
+	outReq.Header.Del("Proxy-Connection")
 
 	// 4. Execute HTTP request
 	client := &http.Client{}
@@ -135,6 +156,42 @@ func (p *ZeroTrustProxy) handleProxy(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(resp.StatusCode)
 	io.Copy(w, resp.Body)
+}
+
+func (p *ZeroTrustProxy) resolveTargetURL(r *http.Request) string {
+	rawURL := r.URL.String()
+	// If the request already has an absolute HTTP/HTTPS URL (standard proxy forward)
+	if r.URL.Scheme == "http" || r.URL.Scheme == "https" {
+		return rawURL
+	}
+
+	// If target host is in Host header and not our local proxy listener
+	host := r.Host
+	if host != "" && !strings.Contains(host, "127.0.0.1") && !strings.Contains(host, "localhost") && !strings.Contains(host, "host.docker.internal") {
+		return fmt.Sprintf("https://%s%s", host, r.URL.RequestURI())
+	}
+
+	// BaseURL mode (e.g. ANTHROPIC_BASE_URL or OPENAI_BASE_URL set to this proxy)
+	path := r.URL.Path
+	if r.Header.Get("x-api-key") != "" || strings.Contains(path, "messages") || strings.Contains(path, "anthropic") {
+		parsed, _ := url.Parse("https://api.anthropic.com")
+		parsed.Path = path
+		parsed.RawQuery = r.URL.RawQuery
+		return parsed.String()
+	}
+
+	if strings.Contains(path, "chat/completions") || strings.Contains(path, "models") || strings.Contains(r.Header.Get("Authorization"), DummyOpenAIKey) {
+		parsed, _ := url.Parse("https://api.openai.com")
+		parsed.Path = path
+		parsed.RawQuery = r.URL.RawQuery
+		return parsed.String()
+	}
+
+	// Default fallback to Anthropic API endpoint
+	parsed, _ := url.Parse("https://api.anthropic.com")
+	parsed.Path = path
+	parsed.RawQuery = r.URL.RawQuery
+	return parsed.String()
 }
 
 func (p *ZeroTrustProxy) substituteSecret(headers http.Header, headerName, dummyValue, realValue string) {

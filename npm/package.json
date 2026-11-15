@@ -4,8 +4,10 @@
   "description": "Secure AI Agent Sandbox with Docker & eBPF interceptors",
   "main": "bin/stuntdouble.js",
   "bin": {
-    "stuntdouble": "bin/stuntdouble.js",
-    "sd": "bin/stuntdouble.js"
+    "agentsh": "bin/stuntdouble.js",
+    "ash": "bin/stuntdouble.js",
+    "sd": "bin/stuntdouble.js",
+    "stuntdouble": "bin/stuntdouble.js"
   },
   "scripts": {
     "postinstall": "node scripts/postinstall.js"

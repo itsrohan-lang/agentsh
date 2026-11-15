@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/graphql-go/graphql v0.8.1
-	github.com/prometheus/client_golang v1.25.0
+	github.com/prometheus/client_golang v1.23.2
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.2
 )
