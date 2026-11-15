@@ -66,7 +66,12 @@ var runCmd = &cobra.Command{
 			}
 		}
 
-		ebpfHook, err := ebpf.AttachInterceptor("/sys/fs/cgroup/")
+		cgroupTarget := os.Getenv("AGENTSH_CGROUP_PATH")
+		if cgroupTarget == "" {
+			cgroupTarget = "/sys/fs/cgroup/agentsh"
+		}
+
+		ebpfHook, err := ebpf.AttachInterceptor(cgroupTarget)
 		switch {
 		case err == nil:
 			defer ebpfHook.Detach()
@@ -76,7 +81,11 @@ var runCmd = &cobra.Command{
 		case errors.Is(err, ebpf.ErrUnsupported):
 			return errors.New(unenforcedWarning)
 		default:
-			return fmt.Errorf("attaching egress filter: %w", err)
+			if allowUnenforced {
+				fmt.Printf("⚠️  Kernel egress filter could not attach (%v); proceeding with --allow-unenforced-network.\n", err)
+			} else {
+				return fmt.Errorf("attaching egress filter: %w\nUse --allow-unenforced-network to acknowledge running without kernel egress filtering", err)
+			}
 		}
 
 		fmt.Printf("🚀 Starting agentsh sandbox for agent: %s\n", agentName)

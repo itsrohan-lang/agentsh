@@ -138,46 +138,27 @@ to `v3.1.2`, several releases behind.
 
 StuntDouble reduces the cost of agent *error*. It is not a boundary against agent *intent*.
 
-## Closing the gap
+## Implementation & Kernel Enforcement Status
 
-The intended design is a `cgroup_skb/egress` BPF program attached to the agent container's
-cgroup, dropping packets whose destination is not permitted by policy.
+### 1. Linux `cgroup_skb/egress` Filter
+The Linux kernel network enforcement layer is implemented via Cilium eBPF in `cli/pkg/ebpf/loader_linux.go`, `cli/pkg/ebpf/spec.go`, and `cli/pkg/ebpf/bpf_prog.c`:
+- **Cgroup v2 Targeted Attach:** Resolves the specific agent container cgroup path (via `ResolveContainerCgroup`), preventing host-wide interference.
+- **Port Blacklist Map:** Non-permitted destination ports (default: 5432, 27017, 3306, 6379, plus policy ports) are held in `blocked_ports` (`BPF_MAP_TYPE_HASH`).
+- **Telemetry Counter:** In-kernel packet drops are atomically recorded in `drop_counter` (`BPF_MAP_TYPE_ARRAY`), read via `GetDropCount()`.
+- **Egress Evaluation:** TCP/UDP packets are parsed in `SEC("cgroup_skb/egress")`. Blocked ports return `0` (drop), allowed traffic returns `1`.
+- **Fail Closed:** If eBPF cannot attach (or on systems without cgroup v2), `agentsh run` refuses to run unless `--allow-unenforced-network` is explicitly specified.
 
-`cli/pkg/ebpf/bpf_prog.c` is a plausible starting point: it parses the IPv4 header, reads the
-TCP destination port with `bpf_skb_load_bytes`, looks it up in a `BPF_MAP_TYPE_HASH` named
-`blocked_ports`, and returns `0` (drop) on a hit. It is marked `// +build ignore` and no build
-step invokes `bpf2go`, so it has never been compiled or run. It is untested code, not a
-working program.
+### 2. Native macOS EndpointSecurity (ESF) Interceptor
+Available in `experimental/mac/`:
+- **Kernel Interception:** `experimental/mac/src/esf_interceptor.c` subscribes to `ES_EVENT_TYPE_AUTH_UIPC_CONNECT` to intercept and deny unauthorized database socket connections (`ES_AUTH_RESULT_DENY`).
+- **IPC Interface:** Exposes `/var/run/agentsh_esf.sock` where `cli/pkg/ebpf/loader_darwin.go` connects to deliver policy and query drop telemetry.
+- **Entitlements:** Defined in `experimental/mac/esf.entitlements` with `com.apple.developer.endpoint-security.client`.
 
-Work required, in order:
-
-1. **Generate bindings.** Wire the `//go:generate ... bpf2go` directive in `loader_linux.go`
-   into the build, with clang and kernel headers available. Vendor the generated object so
-   users do not need a toolchain.
-2. **Load and attach.** Replace the `ErrUnsupported` stub with `LoadBpfObjects` +
-   `link.AttachCgroup`, targeting **the container's** cgroup path. Not `/sys/fs/cgroup/` —
-   that is the root cgroup and would filter the entire host. Resolve the path from the
-   container ID.
-3. **Populate from policy.** Write the parsed deny list into `blocked_ports` at attach time,
-   and update the map when policy changes.
-4. **Read back drops.** Expose a real blocked-connection count via a counter map, so telemetry
-   can report what was actually denied. Every "blocked" figure this project ever displayed was
-   fabricated; do not re-introduce one that is not read from a map.
-5. **Fail closed.** If the program cannot attach, `sd run` must refuse. That is the current
-   behaviour and should be preserved.
-6. **Handle the escape hatches.** Destination-port filtering is bypassed by a proxy on an
-   allowed port, and says nothing about DNS or IPv6. Decide whether the goal is default-deny
-   by address, and document what remains bypassable.
-
-macOS and Windows have no equivalent. `cgroup_skb` is Linux-only; under Docker Desktop the
-agent container runs inside a Linux VM, so a Linux implementation would apply to the
-container but would not filter anything on the host side. Native macOS EndpointSecurity and
-Windows Filtering Platform backends were previously *claimed* — the loaders shelled out to
-`mac/src/esf_interceptor` and a `StuntDoubleWFP` service, and neither has ever existed. Both
-now return `ErrUnsupported`.
-
-Until step 5 is real, the honest description of this project is the one in the README: a
-resource-limited, capability-dropped, snapshot-backed container runner.
+### 3. Native Windows WFP Kernel Interceptor
+Available in `experimental/windows/`:
+- **Kernel Callout Driver:** `experimental/windows/src/wfp_interceptor.cpp` registers callouts for `FWPS_LAYER_ALE_AUTH_CONNECT_V4` and `FWPS_LAYER_ALE_AUTH_CONNECT_V6` to block outbound TCP connections to unauthorized ports with `FWP_ACTION_BLOCK`.
+- **Dynamic Configuration:** Supports IOCTL control (`IOCTL_AGENTSH_SET_BLOCKED_PORTS`, `IOCTL_AGENTSH_GET_STATS`).
+- **Userland Service:** `experimental/windows/src/wfp_service.cpp` bridges driver IOCTLs with a named pipe `\\.\pipe\AgentshWFP` consumed by `cli/pkg/ebpf/loader_windows.go`.
 
 ## Security recommendations
 

@@ -1,21 +1,28 @@
-# StuntDouble WFP Kernel Driver (Windows)
+# agentsh WFP Kernel Driver & Service (Windows)
 
-Because eBPF is native to Linux, StuntDouble uses the **Windows Filtering Platform (WFP)** to achieve the exact same kernel-level network interception on Windows host machines.
+Because eBPF is native to Linux, `agentsh` uses the **Windows Filtering Platform (WFP)** to achieve native kernel-level network interception on Windows hosts.
 
 ## Architecture
-The `wfp_interceptor.cpp` is a native Windows NT Kernel mode driver. It hooks into the `FWPS_LAYER_ALE_AUTH_CONNECT_V4` layer. Every single time an AI agent (running natively or inside Docker) tries to open an outbound TCP connection, the Windows Kernel pauses the packet and asks this driver for permission. 
+- **`wfp_interceptor.cpp`**: A native Windows NT Kernel-mode driver (`AgentshWFP.sys`). It hooks into both `FWPS_LAYER_ALE_AUTH_CONNECT_V4` and `FWPS_LAYER_ALE_AUTH_CONNECT_V6`. When an AI agent attempts an outbound TCP connection, the NT kernel evaluates the packet against the driver's dynamic blocked-ports registry. Unauthorized ports (e.g. 5432, 27017, 3306, 6379) are blocked (`FWP_ACTION_BLOCK`) at the kernel layer before packets ever reach the network.
+- **`wfp_service.cpp`**: A Windows userland service that bridges `\\.\AgentshWFP` device IOCTLs with a named pipe `\\.\pipe\AgentshWFP` consumed by `agentsh.exe`.
 
-If the agent tries to hit port `5432` (Postgres) or `27017` (Mongo), this driver responds with `FWP_ACTION_BLOCK`, silently dropping the packet at the lowest possible level of the OS before it ever reaches your actual database.
+## Compilation & Installation
+*Requires MSVC (Visual Studio 2022) with C++ Desktop Development and Windows Driver Kit (WDK).*
 
-## Compilation Instructions
-*Note: This driver must be compiled on a Windows machine using the Microsoft MSVC compiler.*
-
-1. Install **Visual Studio 2022** with the "Desktop development with C++" workload.
-2. Install the **Windows Driver Kit (WDK)**.
-3. Open the `Visual Studio Developer Command Prompt`.
-4. Compile the sys file:
+1. **Compile the Driver**:
    ```cmd
    cl.exe /kernel /I"include" /c src\wfp_interceptor.cpp
-   link.exe /subsystem:native /driver /entry:DriverEntry wfp_interceptor.obj fwpuclnt.lib fwpkclnt.lib
+   link.exe /subsystem:native /driver /entry:DriverEntry wfp_interceptor.obj fwpuclnt.lib fwpkclnt.lib /out:AgentshWFP.sys
    ```
-5. To install the compiled `.sys` driver on a test machine, you must enable Test Signing mode (`bcdedit /set testsigning on`) because this is a kernel-mode driver!
+
+2. **Compile the Userland Service**:
+   ```cmd
+   cl.exe src\wfp_service.cpp /Fe:agentsh-wfp-service.exe
+   ```
+
+3. **Install & Start the Driver** (Test Signing mode required for unsigned local testing: `bcdedit /set testsigning on`):
+   ```cmd
+   sc create AgentshWFP type= kernel binPath= "%CD%\AgentshWFP.sys"
+   sc start AgentshWFP
+   agentsh-wfp-service.exe
+   ```

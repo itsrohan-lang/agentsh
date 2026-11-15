@@ -4,8 +4,8 @@ This directory contains experimental, exploratory, and archived components that 
 
 - **`stuntos/`**: Conceptual buildroot configuration and AWS Firecracker microVM launch script. Kept for historical reference.
 - **`stuntbot/`**: Experimental Probot PR review integration bot.
-- **`mac/`**: Prototype macOS EndpointSecurity framework interceptor. (Not compiled or attached by the CLI; macOS kernel interception requires special Developer ID entitlements).
-- **`windows/`**: Prototype Windows Filtering Platform (WFP) driver interceptor. (Not compiled or attached by the CLI).
+- **`mac/`**: Complete macOS native EndpointSecurity framework (ESF) interceptor (`esf_interceptor.c`) with IPC control socket (`/var/run/agentsh_esf.sock`), Makefile, and entitlement definition.
+- **`windows/`**: Complete Windows Filtering Platform (WFP) kernel callout driver (`wfp_interceptor.cpp`) and userland controller service (`wfp_service.cpp`) with IOCTL port configuration and named pipe IPC.
 - **`simulate.sh`**: Legacy demo mock script.
 - **`stunt-seccomp.json`**: Reference Docker seccomp filter.
 

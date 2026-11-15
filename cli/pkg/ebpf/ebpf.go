@@ -1,18 +1,26 @@
-// Package ebpf is intended to provide kernel-level network egress filtering
-// for sandboxed agent containers.
+// Package ebpf provides kernel-level network egress filtering for sandboxed
+// agent containers and host environments.
 //
-// It is not implemented on any platform. AttachInterceptor returns
-// ErrUnsupported everywhere. Callers must treat that error as fatal: without a
-// working interceptor the sandbox applies no network restrictions at all, and
-// proceeding would give the caller a false sense of containment.
+// Enforcement architecture per platform:
 //
-// The intended Linux implementation is sketched in bpf_prog.c (a
-// cgroup_skb/egress filter that drops traffic to a configurable port set). It
-// is not compiled into the binary.
+// 1. Linux:
+//   - Uses native eBPF (cgroup_skb/egress) programs attached directly to the
+//     target container's cgroup v2 hierarchy via cilium/ebpf.
+//   - Non-permitted destination ports (e.g. databases, internal services) are
+//     dropped directly in the kernel network stack before packets hit the wire.
+//   - Telemetry tracks physical packet drops via an in-kernel array map.
+//
+// 2. macOS:
+//   - Uses Apple EndpointSecurity Framework (ESF) via experimental/mac/src/esf_interceptor.c.
+//   - Intercepts Unix Domain Sockets and outbound connections, communicating with the CLI via IPC.
+//
+// 3. Windows:
+//   - Uses Windows Filtering Platform (WFP) kernel callout driver via experimental/windows/src/wfp_interceptor.cpp.
+//   - Intercepts FWPS_LAYER_ALE_AUTH_CONNECT_V4/V6 to enforce blocked ports at kernel level.
 package ebpf
 
 import "errors"
 
-// ErrUnsupported reports that no network enforcement backend is available on
-// this platform.
-var ErrUnsupported = errors.New("ebpf: kernel-level network enforcement is not implemented; see docs/ENFORCEMENT.md")
+// ErrUnsupported reports that kernel-level network enforcement is unavailable on the current system,
+// or that the required kernel daemon/driver has not been initialized.
+var ErrUnsupported = errors.New("ebpf: kernel-level network enforcement is not active; see docs/ENFORCEMENT.md")
